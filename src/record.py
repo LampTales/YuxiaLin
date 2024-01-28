@@ -1,7 +1,7 @@
 import pyaudio,wave
 import numpy as np
 
-def get_word(mindb=2000, delayTime=1.3, filename='test.wav', CHUNK=1024, FORMAT=pyaudio.paInt16, CHANNELS=1, RATE=16000):
+def get_word(mindb=6000, delayTime=1.3, filename='test.wav', CHUNK=1024, FORMAT=pyaudio.paInt16, CHANNELS=1, RATE=16000):
     '''
     mindb: the minimum volume to start recording
     delayTime: the time to wait after the volume drops below mindb
@@ -44,26 +44,29 @@ def get_word(mindb=2000, delayTime=1.3, filename='test.wav', CHUNK=1024, FORMAT=
                 tempnum2 = tempnum
                 print("Low sound, waiting...")
             if(cur_vol > mindb):
+                # go back to recording
                 stat2 = False
                 tempnum2 = tempnum
-                # go back to recording
 
             if stat2 and tempnum > tempnum2 + delayTime*15:
-                print("间隔%.2lfs后开始检测是否还是小声"%delayTime)
+                # print("间隔%.2lfs后开始检测是否还是小声"%delayTime)
+                print('time waited: %.2fs, ' % (delayTime) + 'rejudging...')
+
                 if(stat2 and cur_vol < mindb):
+                    # stop recording
                     stat = False
-                    #还是小声，则stat=True
-                    print("小声！")
+                    print("Recording stopped.")
                 else:
+                    # go back to recording
                     stat2 = False
-                    print("大声！")
+                    print("recording resumed...")
 
 
         print(str(cur_vol)  +  "      " +  str(tempnum))
         tempnum = tempnum + 1
         if tempnum > 600:	# time out
             stat = False
-    print("录音结束")
+    print("Done.")
 
     stream.stop_stream()
     stream.close()
