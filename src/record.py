@@ -21,12 +21,14 @@ def get_word(mindb=6000, delayTime=1.3, filename='test.wav', CHUNK=1024, FORMAT=
     print("Listening...")
 
     frames = []
-    flag = False            # Voice detected flag
-    stat = True				#判断是否继续录音
-    stat2 = False			#判断声音小了
+    flag = False            # voice detected flag
+    stat = True				# recording flag
+    stat2 = False			# voice turning low flag
 
     tempnum = 0				#tempnum、tempnum2、tempnum3为时间
     tempnum2 = 0
+
+    hasContent = False		# whether the recording has content
 
     while stat:
         data = stream.read(CHUNK, exception_on_overflow=False)
@@ -35,6 +37,7 @@ def get_word(mindb=6000, delayTime=1.3, filename='test.wav', CHUNK=1024, FORMAT=
         if not flag and cur_vol > mindb:
             flag = True
             print("Voice detected, recording...")
+            hasContent = True
             tempnum2=tempnum
 
         if flag:
@@ -49,7 +52,6 @@ def get_word(mindb=6000, delayTime=1.3, filename='test.wav', CHUNK=1024, FORMAT=
                 tempnum2 = tempnum
 
             if stat2 and tempnum > tempnum2 + delayTime*15:
-                # print("间隔%.2lfs后开始检测是否还是小声"%delayTime)
                 print('time waited: %.2fs, ' % (delayTime) + 'rejudging...')
 
                 if(stat2 and cur_vol < mindb):
@@ -62,9 +64,9 @@ def get_word(mindb=6000, delayTime=1.3, filename='test.wav', CHUNK=1024, FORMAT=
                     print("recording resumed...")
 
 
-        print(str(cur_vol)  +  "      " +  str(tempnum))
+        # print(str(cur_vol)  +  "      " +  str(tempnum))
         tempnum = tempnum + 1
-        if tempnum > 600:	# time out
+        if tempnum > 900:	# time out
             stat = False
     print("Done.")
 
@@ -77,6 +79,8 @@ def get_word(mindb=6000, delayTime=1.3, filename='test.wav', CHUNK=1024, FORMAT=
     wf.setframerate(RATE)
     wf.writeframes(b''.join(frames))
     wf.close()
+
+    return hasContent
 
 
 if __name__ == '__main__':
