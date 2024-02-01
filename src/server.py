@@ -2,6 +2,9 @@ import http.server
 import os
 import argparse
 
+from recognize import Recognizer
+
+Recognizer = Recognizer()
 
 def arg_parser():
     parser = argparse.ArgumentParser()
@@ -21,13 +24,21 @@ class VoiceServer(http.server.BaseHTTPRequestHandler):
     def recognize(self):
         length = int(self.headers['Content-Length'])
         data = self.rfile.read(length)
-        with open('out.wav', 'wb') as f:
+        with open('receive_from_client.wav', 'wb') as f:
             f.write(data)
-        result = recognize(model, 'out.wav')
+        result = Recognizer.recognize('receive_from_client.wav')
         self.send_response(200)
         self.send_header('Content-Type', 'text/plain')
+        self.send_header('rec-result', result.get('text'))
         self.end_headers()
-        self.wfile.write(result.get('text').encode('utf-8'))
+
+        # send the wav file back to the client to do the verification
+        with open('receive_from_client.wav', 'rb') as f:
+            data = f.read()
+        self.wfile.write(data)
+
+
+
 
     def break_conn(self):
         self.close_connection = True
@@ -37,7 +48,6 @@ class VoiceServer(http.server.BaseHTTPRequestHandler):
 def main():
     args = arg_parser()
 
-    model = whisper.load_model(name='small', device='cpu')
     os.chdir(os.path.dirname(__file__))
     httpd = http.server.HTTPServer((args.host, args.port), VoiceServer)
     print('Server started at http://{}:{}'.format(args.host, args.port))
