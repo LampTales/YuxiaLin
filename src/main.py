@@ -14,7 +14,8 @@ def main():
 
     get_word(filename=VOICE_FILE)
     result = recognize(model, VOICE_FILE)
-    print(result)
+    word = result.get('text')
+    
 
 
 
