@@ -1,13 +1,20 @@
 import whisper
 import os
 
-def recognize(model, filename):
-    file = os.path.join(os.path.dirname(__file__), filename)
-    print(file)
-    result = model.transcribe(file)
-    return result
+
+model_size = 'tiny'
+
+class Recognizer:
+    def __init__(self, size=model_size):
+        self.model = whisper.load_model(name=size)
+
+    def recognize(self, filename):
+        file = os.path.join(os.path.dirname(__file__), filename)
+        print(file)
+        result = self.model.transcribe(file)
+        return result
 
 if __name__ == '__main__':
-    model = whisper.load_model(name='tiny', device='cpu')
-    result = recognize(model, 'test.wav')
+    r = Recognizer()
+    result = r.recognize('test.wav')
     print(result.get('text'))

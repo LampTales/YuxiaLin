@@ -1,20 +1,18 @@
 import whisper
 from record import get_word
-from recognize import recognize
+from recognize import Recognizer
 
 WHISPER_MODEL = 'tiny'
 VOICE_FILE = 'test.wav'
 
-def get_whisper_model(model_size='tiny'):
-    model = whisper.load_model(name=model_size)
-    return model
+
 
 def main():
-    model = get_whisper_model(WHISPER_MODEL)
+    recognizer = Recognizer()
+    result = recognizer.recognize('../lin_voice/信赖触摸.wav')
+    print(result.get('text'))
 
-    get_word(filename=VOICE_FILE)
-    result = recognize(model, VOICE_FILE)
-    word = result.get('text')
+
     
 
 
