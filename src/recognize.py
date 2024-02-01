@@ -1,8 +1,8 @@
 import whisper
 import os
 
-
-model_size = 'tiny'
+# possible values: 'tiny', 'base', 'samll', 'medium', 'large'
+model_size = 'medium'
 
 class Recognizer:
     def __init__(self, size=model_size):

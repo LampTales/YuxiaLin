@@ -1,15 +1,17 @@
 import http.server
 import os
 import argparse
+from urllib import parse as urlparse
 
 from recognize import Recognizer
 
-Recognizer = Recognizer()
+
+recognizer = None
 
 def arg_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--host', '-i', help='host to listen', type=str, default='localhost')
-    parser.add_argument('--port', '-p', help='port to listen', type=int, default=8084)
+    parser.add_argument('--port', '-p', help='port to listen', type=int, default=8081)
     return parser.parse_args()
 
 
@@ -26,10 +28,10 @@ class VoiceServer(http.server.BaseHTTPRequestHandler):
         data = self.rfile.read(length)
         with open('receive_from_client.wav', 'wb') as f:
             f.write(data)
-        result = Recognizer.recognize('receive_from_client.wav')
+        result = recognizer.recognize('receive_from_client.wav')
         self.send_response(200)
         self.send_header('Content-Type', 'text/plain')
-        self.send_header('rec-result', result.get('text'))
+        self.send_header('rec-result', urlparse.quote(result.get('text')))
         self.end_headers()
 
         # send the wav file back to the client to do the verification
@@ -38,19 +40,26 @@ class VoiceServer(http.server.BaseHTTPRequestHandler):
         self.wfile.write(data)
 
 
-
-
     def break_conn(self):
         self.close_connection = True
 
 
 
 def main():
-    args = arg_parser()
 
-    os.chdir(os.path.dirname(__file__))
+    print('Loading recognizer...')
+    global recognizer
+    recognizer = Recognizer()
+
+    args = arg_parser()
+    print('debug: {}'.format(args))
+    # os.chdir(os.path.dirname(__file__))
     httpd = http.server.HTTPServer((args.host, args.port), VoiceServer)
     print('Server started at http://{}:{}'.format(args.host, args.port))
     httpd.serve_forever()
+
+
+if __name__ == '__main__':
+    main()
 
 
