@@ -5,10 +5,12 @@ from urllib import parse as urlparse
 
 from recognize import Recognizer
 from respose import Responser
+from gen_voice import VoiceGenerator
 
 
 recognizer = None
 responser = None
+voice_generator = None
 
 
 def arg_parser():
@@ -39,7 +41,7 @@ class VoiceServer(http.server.BaseHTTPRequestHandler):
         self.send_header('rec-result', urlparse.quote(result.get('text')))
         self.end_headers()
 
-        # send the wav file back to the client to do the verification
+        # send the wav file back to the client
         with open('receive_from_client.wav', 'rb') as f:
             data = f.read()
         self.wfile.write(data)
@@ -48,17 +50,28 @@ class VoiceServer(http.server.BaseHTTPRequestHandler):
     def rec_rep_tts(self):
         length = int(self.headers['Content-Length'])
         data = self.rfile.read(length)
+
+        # save the wav file from the client
         with open('receive_from_client.wav', 'wb') as f:
             f.write(data)
+
+        # recognize the wav file
         result = recognizer.recognize('receive_from_client.wav')
+
+        # get the response according to the recognized text
         response = responser.respond(result.get('text'))
+
+        # generate the voice for the response text
+        voice_generator.generate(response, filename='response.wav')
+
         self.send_response(200)
         self.send_header('Content-Type', 'text/plain')
+        # insert the response text into the header, encode the text to avoid illegal characters
         self.send_header('rec-result', urlparse.quote(response))
         self.end_headers()
 
-        # send the wav file back to the client to do the verification
-        with open('receive_from_client.wav', 'rb') as f:
+        # send the response wav file back to the client
+        with open('response.wav', 'rb') as f:
             data = f.read()
         self.wfile.write(data)
 
@@ -78,6 +91,9 @@ def main():
     global responser
     responser = Responser()
 
+    print('Loading voice generator...')
+    global voice_generator
+    voice_generator = VoiceGenerator()
 
     args = arg_parser()
     print('debug: {}'.format(args))

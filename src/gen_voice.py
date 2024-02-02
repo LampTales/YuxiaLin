@@ -1,8 +1,15 @@
 from paddlespeech.cli.tts.infer import TTSExecutor
 
-tts = TTSExecutor()
+path = 'tts_output.wav'
 
-wav_file = tts(
-    text='新鲜出炉的菠萝油，你也想吃？',
-    output='out.wav'
-)
+class VoiceGenerator:
+    def __init__(self):
+        self.model = TTSExecutor()
+
+    def generate(self, text, filename=path):
+        wav_file = self.model(
+            text=text, 
+            output=filename,
+            )
+        
+        return True
