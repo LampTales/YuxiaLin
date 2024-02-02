@@ -64,7 +64,7 @@ def get_word(mindb=6000, delayTime=1.3, filename='test.wav', CHUNK=1024, FORMAT=
                     print("recording resumed...")
 
 
-        # print(str(cur_vol)  +  "      " +  str(tempnum))
+        print(str(cur_vol)  +  "      " +  str(tempnum))
         tempnum = tempnum + 1
         if tempnum > 900:	# time out
             stat = False

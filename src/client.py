@@ -2,6 +2,7 @@ import http.client
 import os
 import argparse
 from urllib import parse as urlparse
+from record import get_word
 
 def arg_parser():
     parser = argparse.ArgumentParser()
@@ -10,12 +11,15 @@ def arg_parser():
     return parser.parse_args()
 
 def main():
+    wav_path = 'test.wav'
+    get_word(filename=wav_path)
+
     args = arg_parser()
 
-    # os.chdir(os.path.dirname(__file__))
     conn = http.client.HTTPConnection(args.host, args.port)
     # send the wav to the server
-    with open('../lin_voice/zh/信赖触摸.wav', 'rb') as f:
+    # wav_path = '../lin_voice/zh/信赖触摸.wav'
+    with open(wav_path, 'rb') as f:
         data = f.read()
         length = len(data)
     conn.request('POST', '/rec', headers={'Operation': 'rec', 'Content-Length': length})
