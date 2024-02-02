@@ -4,7 +4,7 @@ import argparse
 from urllib import parse as urlparse
 
 from recognize import Recognizer
-from respose import Responser
+from response import Responser
 from gen_voice import VoiceGenerator
 
 
@@ -60,6 +60,7 @@ class VoiceServer(http.server.BaseHTTPRequestHandler):
 
         # get the response according to the recognized text
         response = responser.respond(result.get('text'))
+        print('Response: {}'.format(response))
 
         # generate the voice for the response text
         voice_generator.generate(response, filename='response.wav')
