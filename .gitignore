@@ -1,3 +1,4 @@
 src/__pycache__
 PaddleSpeech
 src/nltk_data
+src/*.wav
