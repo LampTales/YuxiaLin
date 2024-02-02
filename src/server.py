@@ -95,6 +95,9 @@ def main():
     global voice_generator
     voice_generator = VoiceGenerator()
 
+    print('Testing VoiceGenerator...')
+    voice_generator.generate('刚出炉的菠萝油，你也想吃？')
+
     args = arg_parser()
     print('debug: {}'.format(args))
     # os.chdir(os.path.dirname(__file__))
