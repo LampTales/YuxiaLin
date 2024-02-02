@@ -4,9 +4,12 @@ import argparse
 from urllib import parse as urlparse
 
 from recognize import Recognizer
+from respose import Responser
 
 
 recognizer = None
+responser = None
+
 
 def arg_parser():
     parser = argparse.ArgumentParser()
@@ -22,6 +25,8 @@ class VoiceServer(http.server.BaseHTTPRequestHandler):
         print('Operation: {}'.format(operation))
         if operation == 'rec':
             self.recognize()
+        elif operation == 'rep':
+            self.rec_rep_tts()
 
     def recognize(self):
         length = int(self.headers['Content-Length'])
@@ -40,6 +45,24 @@ class VoiceServer(http.server.BaseHTTPRequestHandler):
         self.wfile.write(data)
 
 
+    def rec_rep_tts(self):
+        length = int(self.headers['Content-Length'])
+        data = self.rfile.read(length)
+        with open('receive_from_client.wav', 'wb') as f:
+            f.write(data)
+        result = recognizer.recognize('receive_from_client.wav')
+        response = responser.respond(result.get('text'))
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/plain')
+        self.send_header('rec-result', urlparse.quote(response))
+        self.end_headers()
+
+        # send the wav file back to the client to do the verification
+        with open('receive_from_client.wav', 'rb') as f:
+            data = f.read()
+        self.wfile.write(data)
+
+
     def break_conn(self):
         self.close_connection = True
 
@@ -50,6 +73,11 @@ def main():
     print('Loading recognizer...')
     global recognizer
     recognizer = Recognizer()
+
+    print('Loading responser...')
+    global responser
+    responser = Responser()
+
 
     args = arg_parser()
     print('debug: {}'.format(args))
