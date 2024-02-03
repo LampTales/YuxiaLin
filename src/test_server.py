@@ -44,6 +44,10 @@ def test_conn():
         conn = http.client.HTTPConnection(args.host, args.port)
         conn.close()
         print()
+
+def test():
+    activate = False
+    print(str(activate))
         
 
 

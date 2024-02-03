@@ -29,6 +29,27 @@ class VoiceServer(http.server.BaseHTTPRequestHandler):
             self.recognize()
         elif operation == 'rep':
             self.rec_rep_tts()
+        elif operation == 'act':
+            self.activate()
+
+
+    def activate(self):
+        length = int(self.headers['Content-Length'])
+        data = self.rfile.read(length)
+        with open('receive_from_client.wav', 'wb') as f:
+            f.write(data)
+
+        # recognize the wav file
+        result = recognizer.recognize('receive_from_client.wav')
+
+        # TODO: check if the recognized text is a activation word
+        activate = True
+
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/plain')
+        self.send_header('activate', str(activate))
+        self.end_headers()
+
 
     def recognize(self):
         length = int(self.headers['Content-Length'])
@@ -39,6 +60,11 @@ class VoiceServer(http.server.BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-Type', 'text/plain')
         self.send_header('rec-result', urlparse.quote(result.get('text')))
+
+        # TODO: check if the recognized text has text
+        has_text = True
+        self.send_header('has-text', str(has_text))
+
         self.end_headers()
 
         # send the wav file back to the client

@@ -43,6 +43,9 @@ def run_client(host, port):
             if not go_on():
                 break
 
+    # !!! This structrue is wrong, the judgement should be all thrown to the server side, but I am too sleepy to fix it now
+    # also, I haven't test the conn yet, I start to get too many things to do, maybe I should keep a log to follow the progress
+
 
 
 
