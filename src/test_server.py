@@ -36,5 +36,17 @@ def main():
     # end the connection
     conn.close()
 
+def test_conn():
+    n = 0
+    args = arg_parser()
+
+    while n < 10:
+        conn = http.client.HTTPConnection(args.host, args.port)
+        conn.close()
+        print()
+        
+
+
+
 if __name__ == '__main__':
     main()

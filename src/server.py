@@ -68,8 +68,9 @@ class VoiceServer(http.server.BaseHTTPRequestHandler):
 
         self.send_response(200)
         self.send_header('Content-Type', 'text/plain')
-        # insert the response text into the header, encode the text to avoid illegal characters
-        self.send_header('rec-result', urlparse.quote(response))
+        # insert the text into the header, encode the text to avoid illegal characters
+        self.send_header('rec-result', urlparse.quote(result.get('text')))
+        self.send_header('rep-result', urlparse.quote(response))
         self.end_headers()
 
         # send the response wav file back to the client
