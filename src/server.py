@@ -57,6 +57,7 @@ class VoiceServer(http.server.BaseHTTPRequestHandler):
 
         # recognize the wav file
         result = recognizer.recognize('receive_from_client.wav')
+        print('Receive: {}'.format(result.get('text')))
 
         # get the response according to the recognized text
         response = responser.respond(result.get('text'))
