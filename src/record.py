@@ -83,5 +83,37 @@ def get_word(mindb=6000, delayTime=1.3, filename='test.wav', CHUNK=1024, FORMAT=
     return hasContent
 
 
+# written for testing
+def just_record(filename='test.wav', CHUNK=1024, FORMAT=pyaudio.paInt16, CHANNELS=1, RATE=16000, record_time=5):
+    p = pyaudio.PyAudio()
+    stream = p.open(format=FORMAT,
+                    channels=CHANNELS,
+                    rate=RATE,
+                    input=True,
+                    frames_per_buffer=CHUNK)
+    print("Recording...")
+
+    frames = []
+    cnt = record_time * 15
+    while True:
+        data = stream.read(CHUNK, exception_on_overflow=False)
+        frames.append(data)
+        cnt -= 1
+        if cnt <= 0:
+            break
+
+    print("Done.")
+
+    stream.stop_stream()
+    stream.close()
+    p.terminate()
+    wf = wave.open(filename, 'wb')
+    wf.setnchannels(CHANNELS)
+    wf.setsampwidth(p.get_sample_size(FORMAT))
+    wf.setframerate(RATE)
+    wf.writeframes(b''.join(frames))
+    wf.close()
+
+
 if __name__ == '__main__':
     get_word()

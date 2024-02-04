@@ -15,19 +15,63 @@ def arg_parser():
     parser.add_argument('--port', '-p', help='port to connect', type=int, default=8081)
     return parser.parse_args()
 
-def activate():
-    return True
 
-def rec_rep_tts():
-    pass
+def activate(filename='test.wav'):
+    if not get_word(filename=filename):
+        return False
+    
+    with open(filename, 'rb') as f:
+        data = f.read()
+        length = len(data)
 
-def go_on():
-    pass
+    conn.request('POST', '/act', headers={'Operation': 'act', 'Content-Length': length})
+    conn.send(data)
+
+    response = conn.getresponse()
+    print(response.status, response.reason)
+
+    activate = (response.getheader('activate') == 'True')
+
+    return activate
 
 
-def run_client(host, port):
+def get_word_rec(filename='test.wav'):
+    if not get_word(filename=filename):
+        return False
+    
+    with open(filename, 'rb') as f:
+        data = f.read()
+        length = len(data)
+
+    conn.request('POST', '/rec', headers={'Operation': 'rec', 'Content-Length': length})
+    conn.send(data)
+
+    response = conn.getresponse()
+    print(response.status, response.reason)
+
+    result = urlparse.unquote(response.getheader('rec-result'))
+    has_text = (response.getheader('has-text') == 'True')
+
+    return has_text, result
     
 
+def rep_tts(text, filename='receive_from_server.wav'):
+    conn.request('POST', '/p_t', headers={'Operation': 'p_t', 'Content-Length': len(text), 'text': text})
+
+    response = conn.getresponse()
+    print(response.status, response.reason)
+
+    data = response.read()
+    with open(filename, 'wb') as f:
+        f.write(data)
+
+    return filename
+
+
+
+retry_limit = 3
+
+def run_client(host, port):
     while True:
         global conn
         conn = http.client.HTTPConnection(host, port)
@@ -35,24 +79,21 @@ def run_client(host, port):
         while not activate():
             continue
 
-        get_word()
+        cnt = 0
+        while cnt < retry_limit:
+            has_text, result = get_word_rec()
+            if has_text:
+                wav_path = rep_tts(result)
+                playsound(wav_path)
+            else:
+                cnt += 1
 
-        while True:
-            rec_rep_tts()
-
-            if not go_on():
-                break
-
-    # !!! This structrue is wrong, the judgement should be all thrown to the server side, but I am too sleepy to fix it now
-    # also, I haven't test the conn yet, I start to get too many things to do, maybe I should keep a log to follow the progress
-
-
-
+        conn.close()
 
         
     
 
-def main():
+def test1():
     wav_path = 'test.wav'
 
     get_word(filename=wav_path)
@@ -88,7 +129,22 @@ def play_test():
     playsound('receive_from_server.wav')
 
 
+def test2():
+    global conn
+    conn = http.client.HTTPConnection('localhost', 8081)
+
+    path = rep_tts('新鲜出炉的菠萝油，你也想吃？')
+
+    playsound(path)
+
+
+from record import just_record
+def test3():
+    just_record()
+
+
 
 if __name__ == '__main__':
-    main()
-    # play_test()
+    # run_client('localhost', 8081)
+    # test2()
+    test3()
