@@ -53,10 +53,30 @@ def get_word_rec(filename='test.wav'):
     has_text = (response.getheader('has-text') == 'True')
 
     return has_text, result
+
+
+def rec(filename='test.wav', save_path='receive_from_server.wav', debug_flag=False):
+    with open(filename, 'rb') as f:
+        data = f.read()
+        length = len(data)
+
+    conn.request('POST', '/rec', headers={'Operation': 'rec', 'Content-Length': length, 'debug': str(debug_flag)})
+    conn.send(data)
+
+    response = conn.getresponse()
+    print(response.status, response.reason)
+
+    result = urlparse.unquote(response.getheader('rec-result'))
+    has_text = (response.getheader('has-text') == 'True')
+
+    with open(save_path, 'wb') as f:
+        f.write(response.read())
+
+    return has_text, result
     
 
 def rep_tts(text, filename='receive_from_server.wav'):
-    conn.request('POST', '/p_t', headers={'Operation': 'p_t', 'Content-Length': len(text), 'text': text})
+    conn.request('POST', '/p_t', headers={'Operation': 'p_t', 'Content-Length': len(text), 'text': urlparse.quote(text)})
 
     response = conn.getresponse()
     print(response.status, response.reason)
@@ -130,8 +150,10 @@ def play_test():
 
 
 def test2():
+
+    args = arg_parser()
     global conn
-    conn = http.client.HTTPConnection('localhost', 8081)
+    conn = http.client.HTTPConnection(args.host, args.port)
 
     path = rep_tts('新鲜出炉的菠萝油，你也想吃？')
 
@@ -140,7 +162,21 @@ def test2():
 
 from record import just_record
 def test3():
-    just_record()
+    just_record(filename='test.wav')
+
+    args = arg_parser()
+    global conn
+    conn = http.client.HTTPConnection(args.host, args.port)
+    
+    has_text, result = rec(filename='test.wav', debug_flag=True)
+
+    print('has_text: {}'.format(has_text))
+    print('result: {}'.format(result))
+
+    
+    conn.close()
+
+    
 
 
 
