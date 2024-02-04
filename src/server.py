@@ -25,29 +25,33 @@ def act_judge(rec_result):
         return True
     else:
         return False
+    
+
+def has_text_judge(rec_result):
+    return rec_result.get('segments')[0].get('no_speech_prob') < 0.2
 
 
 class VoiceServer(http.server.BaseHTTPRequestHandler):
     def do_POST(self):
         print('POST request received')
         operation = self.headers['Operation']
-        debug_flag = self.headers['debug'] is not None and self.headers['debug'] == 'True'
+        
         print('Operation: {}'.format(operation))
         if operation == 'rec':
-            self.rec(debug_flag=debug_flag)
+            self.rec()
         elif operation == 'rep':
-            self.rep(debug_flag=debug_flag)
+            self.rep()
         elif operation == 'tts':
-            self.tts(debug_flag=debug_flag)
+            self.tts()
         elif operation == 'p_t':
-            self.rep_tts(debug_flag=debug_flag)
+            self.rep_tts()
         elif operation == 'c_p_t':
-            self.rec_rep_tts(debug_flag=debug_flag)
+            self.rec_rep_tts()
         elif operation == 'act':
-            self.activate(debug_flag=debug_flag)
+            self.activate()
 
 
-    def activate(self, debug_flag=False):
+    def activate(self):
         length = int(self.headers['Content-Length'])
         data = self.rfile.read(length)
         with open('receive_from_client.wav', 'wb') as f:
@@ -67,19 +71,26 @@ class VoiceServer(http.server.BaseHTTPRequestHandler):
         self.end_headers()
 
 
-    def rec(self, debug_flag=False):
+    def rec(self):
         length = int(self.headers['Content-Length'])
         
         data = self.rfile.read(length)
         with open('receive_from_client.wav', 'wb') as f:
             f.write(data)
         result = recognizer.recognize('receive_from_client.wav')
+
+        # debug output
+        debug_flag = self.headers['debug'] is not None and self.headers['debug'] == 'True'
+        if debug_flag:
+            print('debug log:')
+            print('\nThe whole rec result:')
+            print(result)
+
         self.send_response(200)
         self.send_header('Content-Type', 'text/plain')
         self.send_header('rec-result', urlparse.quote(result.get('text')))
 
-        # TODO: check if the recognized text has text
-        has_text = True
+        has_text = has_text_judge(result)
         self.send_header('has-text', str(has_text))
 
         self.end_headers()
@@ -90,7 +101,7 @@ class VoiceServer(http.server.BaseHTTPRequestHandler):
         self.wfile.write(data)
 
 
-    def rep(self, debug_flag=False):
+    def rep(self):
         text = urlparse.unquote(self.headers['text'])
         print('Receive text: {}'.format(text))
 
@@ -103,7 +114,7 @@ class VoiceServer(http.server.BaseHTTPRequestHandler):
         self.end_headers()
 
 
-    def tts(self, debug_flag=False):
+    def tts(self):
         text = urlparse.unquote(self.headers['text'])
         print('Text to generate: {}'.format(text))
 
@@ -118,14 +129,14 @@ class VoiceServer(http.server.BaseHTTPRequestHandler):
         self.wfile.write(data)
 
 
-    def rep_tts(self, debug_flag=False):
+    def rep_tts(self):
         text = urlparse.unquote(self.headers['text'])
         print('Receive text: {}'.format(text))
 
         response = responser.respond(text)
         print('Response: {}'.format(response))
 
-        voice_generator.generate(text, filename='response.wav')
+        voice_generator.generate(response, filename='response.wav')
 
         self.send_response(200)
         self.send_header('Content-Type', 'text/plain')
@@ -136,7 +147,7 @@ class VoiceServer(http.server.BaseHTTPRequestHandler):
         self.wfile.write(data)
 
 
-    def rec_rep_tts(self, debug_flag=False):
+    def rec_rep_tts(self):
         length = int(self.headers['Content-Length'])
         data = self.rfile.read(length)
 
@@ -161,8 +172,7 @@ class VoiceServer(http.server.BaseHTTPRequestHandler):
         self.send_header('rec-result', urlparse.quote(result.get('text')))
         self.send_header('rep-result', urlparse.quote(response))
 
-        # TODO: check if the recognized text has text
-        has_text = True
+        has_text = has_text_judge(result)
         self.send_header('has-text', str(has_text))
 
         self.end_headers()
