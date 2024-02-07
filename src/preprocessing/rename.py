@@ -38,7 +38,7 @@ name_list= {
     '非3星结束行动' : 'non_three_star_end_action',
 }
 
-path = 'lin_voice/jp'
+path = 'lin_voice/en'
 
 def get_file_names_without_extension(dir_path):
     file_names = os.listdir(dir_path)

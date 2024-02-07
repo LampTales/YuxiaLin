@@ -5,3 +5,5 @@ src/nltk_data
 src/*.wav
 
 src/configs/temp.*
+
+lin_voice/*_sp
