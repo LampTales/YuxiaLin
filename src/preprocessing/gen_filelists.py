@@ -22,3 +22,9 @@ def gen_list(file_list_path, raw_data_path):
             entry = f'./dataset/{data_name}/{dir}/{file}|{speaker}|{lang.upper()}|{text}\n'
             file_list.write(entry)
             print(entry)
+            
+    file_list.close()
+
+
+if __name__ == '__main__':
+    gen_list(file_list_path, raw_data_path)
