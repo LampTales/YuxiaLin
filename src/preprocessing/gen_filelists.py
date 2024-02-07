@@ -19,5 +19,6 @@ def gen_list(file_list_path, raw_data_path):
         speaker = data_name + '_' + lang
         for file in os.listdir(raw_data_path + dir):
             text = model.transcribe(raw_data_path + dir + '/' + file)
-            entry = f'./dataset/{data_name}/{speaker}/{file}|{speaker}|{lang.upper()}|{text}\n'
+            entry = f'./dataset/{data_name}/{dir}/{file}|{speaker}|{lang.upper()}|{text}\n'
             file_list.write(entry)
+            print(entry)
