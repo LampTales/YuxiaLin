@@ -14,9 +14,15 @@ class Responser:
         self.url = conn.get('response', 'URL')
         self.authorization = conn.get('response', 'Authorization')
         self.model = conn.get('response', 'Model')
+        self.messages = [{
+                    "role": "system",
+                    "content": "You are a helpful assistant."
+                    }]
 
     def respond(self, text):
         try:
+            self.messages.append({'role': 'user',
+                                  'content': text})
             headers = {
                 "Content-Type": "application/json",
                 "Accept": "application/json",
@@ -24,17 +30,7 @@ class Responser:
             }
             payload = json.dumps({
                 "model": self.model,
-                "messages": [
-                    {
-                    "role": "system",
-                    "content": "You are a helpful assistant."
-                    },
-                    {
-                    "role": "user",
-                    "content": text
-                    },
-
-                ]
+                "messages": self.messages,
             })
             # response = requests.post(url=self.url, headers=headers, json=params)
             response = requests.request("POST", self.url, headers=headers, data=payload)
@@ -42,12 +38,16 @@ class Responser:
             
             # just for testing
             # print(message['choices'][0]['message']['content'])
-
+            self.messages.append(message['choices'][0]['message'])
             return message['choices'][0]['message']['content']
         except Exception as e:
             print(f'Error: {e}')
 
-
+    def refresh(self):
+        self.messages = [{
+                    "role": "system",
+                    "content": "You are a helpful assistant."
+                    }]
         
         
 
