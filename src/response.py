@@ -3,7 +3,9 @@ import requests
 from configparser import ConfigParser
 import json
 
-# TODO: Implement a class that will respond to the user's input
+# TODO: Find out how to do the role play
+init_system_sentence = "You are a helpful assistant."
+
 class Responser:
     def __init__(self):
         conn = ConfigParser()
@@ -16,7 +18,7 @@ class Responser:
         self.model = conn.get('response', 'Model')
         self.messages = [{
                     "role": "system",
-                    "content": "You are a helpful assistant."
+                    "content": init_system_sentence
                     }]
 
     def respond(self, text):
@@ -46,7 +48,7 @@ class Responser:
     def refresh(self):
         self.messages = [{
                     "role": "system",
-                    "content": "You are a helpful assistant."
+                    "content": init_system_sentence
                     }]
         
         
