@@ -21,10 +21,14 @@ def arg_parser():
 
 
 def act_judge(rec_result):
-    if '你好' in rec_result.get('text'):
-        return True
-    else:
+    if has_text_judge(rec_result) is False:
         return False
+    
+    if '你好' not in rec_result.get('text'):
+        return False
+    
+    return True
+        
     
 
 def has_text_judge(rec_result):
