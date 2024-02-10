@@ -20,6 +20,16 @@ def arg_parser():
     return parser.parse_args()
 
 
+# the time counter here is super ugly, one day I will find out an elegant way to do this
+time_cnt_needed = True
+time = 0
+def time_cnt_start():
+    global time
+    time = time.time()
+
+def time_cnt_end(cnt_method=""):
+    global time
+    print(f'{cnt_method} time cost: {time.time()-time}')
 
 
 def act_judge(rec_result):
@@ -80,6 +90,9 @@ class VoiceServer(http.server.BaseHTTPRequestHandler):
 
 
     def rec(self):
+        if time_cnt_needed:
+            time_cnt_start()
+
         length = int(self.headers['Content-Length'])
         
         data = self.rfile.read(length)
@@ -108,8 +121,14 @@ class VoiceServer(http.server.BaseHTTPRequestHandler):
             data = f.read()
         self.wfile.write(data)
 
+        if time_cnt_needed:
+            time_cnt_end('rec')
+
 
     def rep(self):
+        if time_cnt_needed:
+            time_cnt_start()
+
         text = urlparse.unquote(self.headers['text'])
         print('Receive text: {}'.format(text))
 
@@ -121,8 +140,14 @@ class VoiceServer(http.server.BaseHTTPRequestHandler):
         self.send_header('rep-result', urlparse.quote(response))
         self.end_headers()
 
+        if time_cnt_needed:
+            time_cnt_end('rep')
+
 
     def tts(self):
+        if time_cnt_needed:
+            time_cnt_start()
+
         text = urlparse.unquote(self.headers['text'])
         print('Text to generate: {}'.format(text))
 
@@ -136,15 +161,26 @@ class VoiceServer(http.server.BaseHTTPRequestHandler):
             data = f.read()
         self.wfile.write(data)
 
+        if time_cnt_needed:
+            time_cnt_end('tts')
+
 
     def rep_tts(self):
         text = urlparse.unquote(self.headers['text'])
         print('Receive text: {}'.format(text))
 
+        if time_cnt_needed:
+            time_cnt_start()
         response = responser.respond(text)
+        if time_cnt_needed:
+            time_cnt_end('rep')
+            time_cnt_start()
+
         print('Response: {}'.format(response))
 
         voice_generator.generate(response, filename='response.wav')
+        if time_cnt_needed:
+            time_cnt_end('tts')
 
         self.send_response(200)
         self.send_header('Content-Type', 'text/plain')
