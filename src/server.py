@@ -20,6 +20,8 @@ def arg_parser():
     return parser.parse_args()
 
 
+
+
 def act_judge(rec_result):
     if has_text_judge(rec_result) is False:
         return False
@@ -73,6 +75,8 @@ class VoiceServer(http.server.BaseHTTPRequestHandler):
         self.send_header('Content-Type', 'text/plain')
         self.send_header('activate', str(activate))
         self.end_headers()
+
+        responser.refresh()
 
 
     def rec(self):
@@ -210,7 +214,6 @@ def main():
     voice_generator.generate('刚出炉的菠萝油，你也想吃？')
 
     args = arg_parser()
-    print('debug: {}'.format(args))
     # os.chdir(os.path.dirname(__file__))
     httpd = http.server.HTTPServer((args.host, args.port), VoiceServer)
     print('Server started at http://{}:{}'.format(args.host, args.port))
