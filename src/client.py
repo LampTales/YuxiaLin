@@ -2,12 +2,23 @@ import http.client
 import os
 import argparse
 from playsound import playsound
+import random
 
 from urllib import parse as urlparse
 from record import get_word
 
 
 conn = None
+
+act_rep_list = [
+    "怎么了？",
+    "有什么事？",
+    "有话快说。",
+    "有什么要帮忙的？",
+]
+def random_rep(list):
+    return random.choice(list)
+
 
 def arg_parser():
     parser = argparse.ArgumentParser()
@@ -73,6 +84,19 @@ def rec(filename='test.wav', save_path='receive_from_server.wav', debug_flag=Fal
         f.write(response.read())
 
     return has_text, result
+
+
+def tts(text, filename='receive_from_server.wav'):
+    conn.request('POST', '/tts', headers={'Operation': 'tts', 'Content-Length': len(text), 'text': urlparse.quote(text)})
+
+    response = conn.getresponse()
+    print(response.status, response.reason)
+
+    data = response.read()
+    with open(filename, 'wb') as f:
+        f.write(data)
+
+    return filename
     
 
 def rep_tts(text, filename='receive_from_server.wav'):
@@ -88,6 +112,14 @@ def rep_tts(text, filename='receive_from_server.wav'):
     return filename
 
 
+def control_switch(result):
+    # TODO: really implement a switch
+    rep_needed = True
+    rep_text = '晓得了。'
+
+    return rep_needed, rep_text
+
+
 
 retry_limit = 3
 
@@ -96,19 +128,33 @@ def run_client(host, port):
         global conn
         conn = http.client.HTTPConnection(host, port)
 
+        print('Lin is listening.')
+
         while not activate():
             continue
+        print('Activated!')
+        act_rep = random_rep(act_rep_list)
+        wav_path = tts(act_rep)
+        playsound(wav_path)
 
         cnt = 0
+        print('Conversation start.')
         while cnt < retry_limit:
             has_text, result = get_word_rec()
             if has_text:
-                wav_path = rep_tts(result)
+                rep_needed, rep_text = control_switch(result)
+                if rep_needed:
+                    wav_path = rep_tts(result)
+                else:
+                    wav_path = tts(rep_text)
                 playsound(wav_path)
             else:
                 cnt += 1
+                print('No text recognized. Retry: {}'.format(cnt))
 
         conn.close()
+
+        print('Conversation end.')
 
         
     
@@ -172,8 +218,6 @@ def test3():
 
     print('has_text: {}'.format(has_text))
     print('result: {}'.format(result))
-
-    
     conn.close()
 
     

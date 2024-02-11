@@ -1,6 +1,11 @@
 import pyaudio,wave
 import numpy as np
 
+
+def second_to_innercnt(time):
+    return int(time * 15)
+
+
 def get_word(mindb=6000, delayTime=1.3, filename='test.wav', CHUNK=1024, FORMAT=pyaudio.paInt16, CHANNELS=1, RATE=16000):
     '''
     mindb: the minimum volume to start recording
@@ -51,7 +56,7 @@ def get_word(mindb=6000, delayTime=1.3, filename='test.wav', CHUNK=1024, FORMAT=
                 stat2 = False
                 tempnum2 = tempnum
 
-            if stat2 and tempnum > tempnum2 + delayTime*15:
+            if stat2 and tempnum > tempnum2 + second_to_innercnt(delayTime):
                 print('time waited: %.2fs, ' % (delayTime) + 'rejudging...')
 
                 if(stat2 and cur_vol < mindb):
@@ -64,7 +69,7 @@ def get_word(mindb=6000, delayTime=1.3, filename='test.wav', CHUNK=1024, FORMAT=
                     print("recording resumed...")
 
 
-        print(str(cur_vol)  +  "      " +  str(tempnum))
+        # print(str(cur_vol)  +  "      " +  str(tempnum))
         tempnum = tempnum + 1
         if tempnum > 900:	# time out
             stat = False
@@ -94,7 +99,7 @@ def just_record(filename='test.wav', CHUNK=1024, FORMAT=pyaudio.paInt16, CHANNEL
     print("Recording...")
 
     frames = []
-    cnt = record_time * 15
+    cnt = second_to_innercnt(record_time)
     while True:
         data = stream.read(CHUNK, exception_on_overflow=False)
         frames.append(data)
