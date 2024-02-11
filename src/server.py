@@ -32,21 +32,6 @@ def time_cnt_end(cnt_method=""):
     print(f'{cnt_method} time cost: {time.time()-time}')
 
 
-def act_judge(rec_result):
-    if has_text_judge(rec_result) is False:
-        return False
-    
-    if '你好' not in rec_result.get('text'):
-        return False
-    
-    return True
-        
-    
-
-def has_text_judge(rec_result):
-    return rec_result.get('segments')[0].get('no_speech_prob') < 0.2
-
-
 class VoiceServer(http.server.BaseHTTPRequestHandler):
     def do_POST(self):
         print('POST request received')
@@ -78,7 +63,7 @@ class VoiceServer(http.server.BaseHTTPRequestHandler):
 
         # TODO: check if the recognized text is a activation word
         activate = False
-        if act_judge(result):
+        if self.act_judge(result):
             activate = True
 
         self.send_response(200)
@@ -111,7 +96,7 @@ class VoiceServer(http.server.BaseHTTPRequestHandler):
         self.send_header('Content-Type', 'text/plain')
         self.send_header('rec-result', urlparse.quote(result.get('text')))
 
-        has_text = has_text_judge(result)
+        has_text = self.has_text_judge(result)
         self.send_header('has-text', str(has_text))
 
         self.end_headers()
@@ -216,7 +201,7 @@ class VoiceServer(http.server.BaseHTTPRequestHandler):
         self.send_header('rec-result', urlparse.quote(result.get('text')))
         self.send_header('rep-result', urlparse.quote(response))
 
-        has_text = has_text_judge(result)
+        has_text = self.has_text_judge(result)
         self.send_header('has-text', str(has_text))
 
         self.end_headers()
@@ -226,6 +211,20 @@ class VoiceServer(http.server.BaseHTTPRequestHandler):
             data = f.read()
         self.wfile.write(data)
 
+
+    def act_judge(self, rec_result):
+        if self.has_text_judge(rec_result) is False:
+            return False
+    
+        if '你好' not in rec_result.get('text'):
+            return False
+    
+        return True
+    
+
+    def has_text_judge(self, rec_result):
+        return rec_result.get('segments')[0].get('no_speech_prob') < 0.2
+    
 
     def break_conn(self):
         self.close_connection = True
