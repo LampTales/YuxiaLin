@@ -1,5 +1,6 @@
 import http.server
 import os
+import time
 import argparse
 from urllib import parse as urlparse
 
@@ -22,14 +23,14 @@ def arg_parser():
 
 # the time counter here is super ugly, one day I will find out an elegant way to do this
 time_cnt_needed = True
-time = 0
+spot = 0
 def time_cnt_start():
-    global time
-    time = time.time()
+    global spot
+    spot = time.time()
 
 def time_cnt_end(cnt_method=""):
-    global time
-    print(f'{cnt_method} time cost: {time.time()-time}')
+    global spot
+    print(f'{cnt_method} time cost: {time.time()-spot}')
 
 
 class VoiceServer(http.server.BaseHTTPRequestHandler):
@@ -89,7 +90,7 @@ class VoiceServer(http.server.BaseHTTPRequestHandler):
         debug_flag = self.headers['debug'] is not None and self.headers['debug'] == 'True'
         if debug_flag:
             print('debug log:')
-            print('\nThe whole rec result:')
+            print('The whole rec result:')
             print(result)
 
         self.send_response(200)
@@ -222,8 +223,9 @@ class VoiceServer(http.server.BaseHTTPRequestHandler):
         return True
     
 
+    # TODO: find out why it will return {'text': '', 'segments': [], 'language': 'en'} under certain cases
     def has_text_judge(self, rec_result):
-        return rec_result.get('segments')[0].get('no_speech_prob') < 0.2
+        return len(rec_result.get('segments')) == 0 or rec_result.get('segments')[0].get('no_speech_prob') < 0.2
     
 
     def break_conn(self):
