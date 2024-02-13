@@ -34,6 +34,7 @@ def activate(filename='test.wav'):
     with open(filename, 'rb') as f:
         data = f.read()
         length = len(data)
+        f.close()
 
     conn.request('POST', '/act', headers={'Operation': 'act', 'Content-Length': length})
     conn.send(data)
@@ -53,8 +54,9 @@ def get_word_rec(filename='test.wav'):
     with open(filename, 'rb') as f:
         data = f.read()
         length = len(data)
+        f.close()
 
-    conn.request('POST', '/rec', headers={'Operation': 'rec', 'Content-Length': length})
+    conn.request('POST', '/rec', headers={'Operation': 'rec', 'Content-Length': length, 'debug': 'True'})
     conn.send(data)
 
     response = conn.getresponse()
@@ -70,6 +72,7 @@ def rec(filename='test.wav', save_path='receive_from_server.wav', debug_flag=Fal
     with open(filename, 'rb') as f:
         data = f.read()
         length = len(data)
+        f.close()
 
     conn.request('POST', '/rec', headers={'Operation': 'rec', 'Content-Length': length, 'debug': str(debug_flag)})
     conn.send(data)
@@ -82,6 +85,7 @@ def rec(filename='test.wav', save_path='receive_from_server.wav', debug_flag=Fal
 
     with open(save_path, 'wb') as f:
         f.write(response.read())
+        f.close()
 
     return has_text, result
 
@@ -95,6 +99,7 @@ def tts(text, filename='receive_from_server.wav'):
     data = response.read()
     with open(filename, 'wb') as f:
         f.write(data)
+        f.close()
 
     return filename
     
@@ -108,6 +113,7 @@ def rep_tts(text, filename='receive_from_server.wav'):
     data = response.read()
     with open(filename, 'wb') as f:
         f.write(data)
+        f.close()
 
     return filename
 
@@ -131,6 +137,7 @@ def run_client(host, port):
         print('Lin is listening.')
 
         while not activate():
+            print('Activation failed. Retry.')
             continue
         print('Activated!')
         act_rep = random_rep(act_rep_list)
@@ -142,6 +149,7 @@ def run_client(host, port):
         while cnt < retry_limit:
             has_text, result = get_word_rec()
             if has_text:
+                cnt = 0
                 rep_needed, rep_text = control_switch(result)
                 if rep_needed:
                     wav_path = rep_tts(result)
@@ -160,54 +168,13 @@ def run_client(host, port):
     
 
 def test1():
-    wav_path = 'test.wav'
-
-    get_word(filename=wav_path)
-
-    args = arg_parser()
-
-    conn = http.client.HTTPConnection(args.host, args.port)
-    # send the wav to the server
-    # wav_path = '../lin_voice/zh/信赖触摸.wav'
-    with open(wav_path, 'rb') as f:
-        data = f.read()
-        length = len(data)
-    conn.request('POST', '/rep', headers={'Operation': 'rep', 'Content-Length': length})
-    conn.send(data)
-    response = conn.getresponse()
-    print(response.status, response.reason)
-    result = urlparse.unquote(response.getheader('rec-result'))
-    print(result)
-    # receive the wav from the server
-    data = response.read()
-    with open('receive_from_server.wav', 'wb') as f:
-        f.write(data)
-
-    # end the connection
-    conn.close()
-
-    # play the wav
-    playsound('./receive_from_server.wav')
+    pass
 
 
-def play_test():
-    # playsound('../lin_voice/zh/信赖触摸.wav')
-    playsound('receive_from_server.wav')
-
-
-def test2():
-
-    args = arg_parser()
-    global conn
-    conn = http.client.HTTPConnection(args.host, args.port)
-
-    path = rep_tts('新鲜出炉的菠萝油，你也想吃？')
-
-    playsound(path)
 
 
 from record import just_record
-def test3():
+def rec_test():
     just_record(filename='test.wav')
 
     args = arg_parser()
@@ -226,5 +193,4 @@ def test3():
 
 if __name__ == '__main__':
     # run_client('localhost', 8081)
-    # test2()
-    test3()
+    rec_test()    

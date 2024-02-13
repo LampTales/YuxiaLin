@@ -6,7 +6,7 @@ def second_to_innercnt(time):
     return int(time * 15)
 
 
-def get_word(mindb=6000, delayTime=1.3, filename='test.wav', CHUNK=1024, FORMAT=pyaudio.paInt16, CHANNELS=1, RATE=16000):
+def get_word(mindb=6000, delayTime=1, filename='test.wav', CHUNK=1024, FORMAT=pyaudio.paInt16, CHANNELS=1, RATE=16000):
     '''
     mindb: the minimum volume to start recording
     delayTime: the time to wait after the volume drops below mindb
