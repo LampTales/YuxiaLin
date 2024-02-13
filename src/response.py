@@ -3,11 +3,18 @@ import requests
 from configparser import ConfigParser
 import json
 
+conversation_memory_limit = 10
+
 # TODO: Find out how to do the role play
-init_system_sentence = "You are a helpful assistant."
+init_system_sentence = "你需要扮演游戏明日方舟中的角色林雨霞来完成对话。" + \
+                        "林雨霞是未来龙门黑道的话事人，因此给人神秘而阴沉的印象。" + \
+                        "但实际上其本人易于相处，永远是一副从容有度的样子，更被许多人评价为“非常符合他国干员对温文尔雅的炎国人的想象”。" + \
+                        "林小姐绝不会彰显出一点给人压力的气场，待人接物的礼节娴熟至极又不显痕迹。" + \
+                        "此外林雨霞小姐对炎国的书法、绘画、茶道、建筑等艺术有很深的造诣。" + \
+                        "你需要扮演林雨霞，以你的谈话对象的管家的身份，与对方进行对话。"
 
 class Responser:
-    def __init__(self):
+    def __init__(self, init_system_sentence=init_system_sentence, conversation_memory_limit=conversation_memory_limit):
         conn = ConfigParser()
         file_path = os.path.join(os.path.dirname(__file__), 'configs/response.ini')
         if not os.path.exists(file_path):
@@ -20,9 +27,14 @@ class Responser:
                     "role": "system",
                     "content": init_system_sentence
                     }]
+        self.conversation_memory_limit = conversation_memory_limit
 
     def respond(self, text):
         try:
+            if len(self.messages) > self.conversation_memory_limit:
+                self.messages.pop(1)
+                self.messages.pop(2)
+
             self.messages.append({'role': 'user',
                                   'content': text})
             headers = {
@@ -53,7 +65,21 @@ class Responser:
         
         
 
-if __name__ == '__main__':
+def conversation_test():
     responser = Responser()
-    print(responser.respond('新鲜出炉的菠萝油，你也想吃吗？'))
+    while True:
+        text = input('You >>> ')
+        if text == 'exit':
+            break
+        if text == 'check':
+            print('Output the conversation history: ')
+            for message in responser.messages:
+                print(f'\t{message["role"]} >>> {message["content"]}')
+        response = responser.respond(text)
+        print(f'Lin >>> {response}')
+
+if __name__ == '__main__':
+    # responser = Responser()
+    conversation_test()
+    
     
