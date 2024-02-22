@@ -217,7 +217,7 @@ class VoiceServer(http.server.BaseHTTPRequestHandler):
         if self.has_text_judge(rec_result) is False:
             return False
     
-        if '你好' not in rec_result.get('text'):
+        if '林雨霞' not in rec_result.get('text'):
             return False
     
         return True
