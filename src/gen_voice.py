@@ -1,6 +1,6 @@
-from paddlespeech.cli.tts.infer import TTSExecutor
 from gradio_client import Client
 import requests
+import os
 
 path = 'tts_output.wav'
 
@@ -10,6 +10,7 @@ device_ps = 'gpu:3'
 
 class PaddleSpeech_generater:
     def __init__(self, device=device_ps, model_name=model_name_ps, language=language_ps):
+        from paddlespeech.cli.tts.infer import TTSExecutor
         self.model = TTSExecutor()
         self.device = device
         self.model_name = model_name
@@ -121,6 +122,43 @@ class BertVITS2_generater:
         
     
 
+host_svc = '127.0.0.1'
+port_svc = 8088
+
+class SoVITS_svc_generater:
+    def __init__(self, host=host_svc, port=port_svc):
+        self.url = f'http://{host}:{port}'
+        self.voice_url = f'http://{host_svc}:{port_svc}/voiceChangeModel'
+        self.root = '/home/ouyl/try/YuxiaLin'
+
+
+    def svc_generate(self, source_wav='test_svc.wav', filename=path, **kwargs):
+        # fill params
+        params = {
+            # 'sample': os.path.join(self.root, source_wav),
+            'fPitchChange': 0 if 'fPitchChange' not in kwargs else kwargs['fPitchChange'],
+            'sampleRate': 16000 if 'sampleRate' not in kwargs else kwargs['sampleRate'],
+            'sSpeakId': 0 if 'sSpeakId' not in kwargs else kwargs['sSpeakId'],
+        }
+
+        files = {
+            'sample': open(source_wav, 'rb')
+        }
+
+        # send request
+        response = requests.post(self.voice_url, params=params, files=files)
+
+        # check response
+        print(f'From SoVITS_svc_generater: {response.status_code}, {response.reason}')
+
+        # save the response
+        with open(filename, 'wb') as f:
+            f.write(response.content)
+
+        return True
+
+
+
 use_generator = 'BertVITS2_generater'
 class VoiceGenerator:
     def __init__(self, generator=use_generator):
@@ -140,5 +178,7 @@ class VoiceGenerator:
     
 
 if __name__ == '__main__':
-    bs = BertVITS2_generater(host='127.0.0.1', port=8086)
-    bs.generate('新鲜出炉的菠萝油，你也想吃？')
+    # bs = BertVITS2_generater(host='127.0.0.1', port=8086)
+    # bs.generate('新鲜出炉的菠萝油，你也想吃？')
+    svc = SoVITS_svc_generater()
+    svc.svc_generate(path='test_svc_result.wav')
