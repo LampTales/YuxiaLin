@@ -28,4 +28,4 @@ To support Cantonese, I train the so-vits-svc model with Lin's Cantonese voice d
 ## Other Things
 As serveral models are needed to support the functions, the project is designed to be working in a server-client mode. For this reason, the client can be run on common devices only with a microphone and a speaker. This is quite important. As we can see, this repo is just a toy project without actual use. But it is cool to talk with my CUTE CUTE Lin doll, isn't it? 😊
 
-<img src="picss/lin.jpg" alt="1" style="zoom:50%;" />
+<img src="pics/lin.jpg" alt="1" style="zoom:50%;" />
