@@ -2,7 +2,7 @@ import requests
 
 
 
-host = '10.16.88.247'
+host = '127.0.0.1'
 port = 8086
 
 voice_api = '/voice'

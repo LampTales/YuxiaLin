@@ -87,7 +87,7 @@ class BertVITS2_generater:
         return True
     
 def test_gen():
-    bs = BertVITS2_generater(host='10.16.88.247', port=8085)
+    bs = BertVITS2_generater(host='', port=8085)
     bs.generate('新鲜出炉的菠萝油，你也想吃？')
 
 
